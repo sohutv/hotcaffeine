@@ -1,0 +1,37 @@
+<html xmlns:th="http://www.thymeleaf.org">
+
+<nav th:fragment="topMenu(isribbon)">
+	<!-- 彩带 -->
+	<div th:if="${isribbon eq true}" id="awwwards" class="right black">
+		<a href="#" target="_blank">best websites of the world</a>
+	</div>
+	<!-- END彩带 -->
+	<!-- 预加载器 -->
+	<div id="preloader">
+	    <div id="divstatus">&nbsp;</div>
+	</div>
+	<!-- 顶部导航栏 -->
+	<nav role="navigation" class="navbar navbar-static-top">
+	    <div class="container-fluid">
+	<!-- 右侧顶部 头像设置-->
+	            <ul style="margin-right:0;" class="nav navbar-nav navbar-right">
+	                <!-- 头像设置 -->
+	                <li>
+						<a data-toggle="dropdown" class="dropdown-toggle" href="#">
+	                        <img alt="" class="admin-pic img-circle" th:src="@{/static/admin/images/head.jpg}">
+							<span id="userName" th:text="${name}"></span>
+	                    </a>
+	                    <ul role="menu" class="dropdown-setting dropdown-menu">
+	                    	<li>
+	                    		<a href="#" onclick="logout()">注销</a>
+	                    	</li>
+	                    </ul>
+	                </li>
+	            </ul>
+	            <!-- end 右侧顶部 头像设置-->
+	        </div>
+	        <!-- end 右侧顶部 -->
+	    </div>
+	</nav>
+	<!-- /结束顶部导航条 -->	
+</nav>

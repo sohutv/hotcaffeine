@@ -1,0 +1,69 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<div  th:fragment="leftMenu">
+	<!-- 左边菜单 -->
+	<div id="skin-select">
+		<div id="logo">
+			<a href="/"></a>
+			<h1>HotCaffeine</h1>
+		</div>
+	    <a id="toggle" style="display:none;">
+	        <span class="entypo-menu"></span>
+	    </a>
+	    <div class="dark">
+	    </div>
+	    <div class="search-hover">
+	        <form id="demo-2">
+	        </form>
+	    </div>
+
+	<!-- 左侧菜单栏 -->
+	    <div class="skin-part">
+	        <div id="tree-wrap">
+	            <div class="side-bar">
+	                <ul class="topnav menu-left-nest">
+	                    <li>
+							<a class="tooltip-tip menuSelected" href="/user/app/add"
+							   target="mainFrame">
+								<i class="fa fontawesome-plus-sign"></i>
+								<span>app配置</span>
+							</a>
+							<a class="tooltip-tip" href="/rule/view"
+							   target="mainFrame">
+								<i class="fa fa-magic"></i>
+								<span>规则配置</span>
+							</a>
+							<a class="tooltip-tip" href="/key/viewTimely"
+							   target="mainFrame">
+								<i class="fa fa-flash"></i>
+								<span>实时热点</span>
+							</a>
+							<a class="tooltip-tip" href="/line/counterDistribution"
+							   target="mainFrame">
+								<i class="fa fa-eye"></i>
+								<span>调用量分布</span>
+							</a>
+							<a class="tooltip-tip" href="/line/topkCount"
+							   target="mainFrame">
+								<i class="fa fa-snowflake-o"></i>
+								<span>topk热键</span>
+							</a>
+							<a class="tooltip-tip" href="/worker/view" th:if="${role eq 'ADMIN'}"
+							   target="mainFrame">
+								<i class="fa fa-home"></i>
+								<span>节点信息</span>
+							</a>
+							<a class="tooltip-tip" href="/user/view" th:if="${role eq 'ADMIN'}"
+							   target="mainFrame">
+								<i class="icon icon-user"></i>
+								<span>用户管理</span>
+							</a>
+	                    </li>
+	                </ul>
+	            </div>
+	        </div>
+	    </div>
+	    <!-- 左侧菜单栏 -->
+	</div>
+	<!-- 结束左边菜单栏 -->
+
+</div>

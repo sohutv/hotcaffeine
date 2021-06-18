@@ -1,0 +1,53 @@
+server:
+  port: 8080
+
+management:
+  server:
+    port: 9998
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+        exclude: shutdown,restart,pause,heapdump,auditevents,threaddump,refresh
+  endpoint:
+    env:
+      post:
+        enabled: false
+
+spring:
+  profiles:
+    active: local
+
+netty:
+  port: ${nettyPort:11111}
+  heartBeat: ${heartBeat:10}
+  timeOut: ${timeOut:5000}
+local:
+  address: ${localAddress:} #有些获取到的ip不能用，需要手工配worker的地址
+
+thread:
+  count: ${threadCount:0}
+caffeine:
+  minutes: ${caffeineMinutes:1}
+#etcd的地址，如有多个用逗号分隔
+etcd:
+  endpoints: ${etcdServer:http://127.0.0.1:2379} #etcd的地址，重要！！！
+  workerForApp: default #该worker放到哪个path下，譬如放/app1下，则该worker只能被app1使用，不会为其他client提供服务
+  user: worker
+  password: '=+WK%&#*'
+  
+# redis configuration
+redis: 
+  host: 127.0.0.1
+  port: 6379
+  connectionTimeout: 2000
+  soTimeout: 2000
+  poolConfig: 
+    maxTotal: 20
+    maxIdle: 10
+    minIdle: 3
+    maxWaitMillis: 2100
+    testWhileIdle: true
+    numTestsPerEvictionRun: -1
+    timeBetweenEvictionRunsMillis: 30000
+    minEvictableIdleTimeMillis: 60000

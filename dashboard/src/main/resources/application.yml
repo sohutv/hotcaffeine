@@ -1,0 +1,72 @@
+server:
+  port: 8081
+
+management:
+  server:
+    port: 8888
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+        exclude: shutdown,restart,pause,heapdump,auditevents,threaddump,refresh
+  endpoint:
+    env:
+      post:
+        enabled: false
+
+spring:
+  profiles:
+    active: local
+  main:
+    allow-bean-definition-overriding: true
+  resources:
+    static-locations: classpath:/resources,classpath:/static
+    # 服务模块
+  devtools:
+    restart:
+      # 热部署开关
+      enabled: true
+  mvc:   #静态文件
+    static-path-pattern : /static/**
+  #模板引擎
+  thymeleaf:
+    model: HTML5
+    prefix: classpath:/templates/
+    suffix: .html
+    #指定编码
+    encoding: utf-8
+    #禁用缓存 默认false
+    cache: false
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+    serialization: 
+      fail-on-empty-beans: false
+       
+login:
+  ciperKey: DSJiSEvR5yAC5fct
+
+etcd: 
+  endpoints: http://127.0.0.1:2379
+  user: root
+  password: 'H&O%T=C9AFF]'
+  
+worker:
+  server: 
+   port: 8080
+
+# redis configuration
+redis: 
+  host: 127.0.0.1
+  port: 6379
+  connectionTimeout: 2000
+  soTimeout: 2000
+  poolConfig: 
+    maxTotal: 20
+    maxIdle: 10
+    minIdle: 3
+    maxWaitMillis: 2100
+    testWhileIdle: true
+    numTestsPerEvictionRun: -1
+    timeBetweenEvictionRunsMillis: 30000
+    minEvictableIdleTimeMillis: 60000

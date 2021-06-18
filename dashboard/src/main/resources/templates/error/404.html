@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      >
+<head th:replace="admin/common/html/head :: head_Normal(~{::title},~{::link},~{::style})">
+
+<title th:text=${title}></title>
+<!-- 这儿引用单独的css link -->
+<link rel="stylesheet" th:href="@{/static/admin/assets/js/button/ladda/ladda.min.css}">
+<link rel="stylesheet" th:href="@{/static/admin/assets/css/extra-pages.css}">
+<style type="text/css">
+/**
+*这里写单独的css样式
+*/
+ body {
+        overflow:hidden!important;
+        padding-top: 120px;
+    }
+</style>
+
+</head>
+
+<body>
+
+    <!-- Preloader -->
+    <div id="preloader">
+        <div id="divstatus">&nbsp;</div>
+    </div>
+
+    <!-- Main content -->
+    <section class="page-error">
+
+        <div class="error-page">
+            <h2 class="headline text-info">404</h2>
+            <div class="error-content">
+                <h3><i class="fa fa-warning text-yellow"></i> 抱歉，找不到您期望的网页 </h3>
+            </div>
+        </div>
+    </section>
+
+
+<!-- 通用js -->
+<div th:include="admin/common/html/js :: onload_js">
+   
+</div>
+
+</body>
+
+
+</html>

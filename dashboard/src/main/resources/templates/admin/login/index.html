@@ -1,0 +1,154 @@
+<!-- bootstrap-table表单样式 -->
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>HotCaffeine</title>
+	<link rel="stylesheet" type="text/css" th:href="@{/static/admin/assets/css/bootstrap.css}">
+</head>
+<body>
+	<form id="login" class="form-horizontal form-bordered form-row-stripped">
+	    <div class="modal-dialog" style="margin-top: 10%;">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h4 class="modal-title text-center" id="myModalLabel">登录</h4>
+	            </div>
+	            <div class="modal-body" id = "model-body">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-body">
+								<div class="form-group">
+									<label class="control-label col-md-3"> 邮箱: </label>
+									<div class="col-md-6">
+										<input type="text" class="form-control" id="email" name="email"
+											placeholder="邮箱" autocomplete="off">
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="control-label col-md-3"> 密码: </label>
+									<div class="col-md-6">
+										<input type="password" class="form-control" id="password"
+											name="password" placeholder="密码" autocomplete="off">
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+	            <div class="modal-footer">
+	                 <button type="button" class="btn btn-primary" onclick="login()">登录</button>
+	                 <button type="button" class="btn btn-info" onclick="showRegister()">注册</button>
+	            </div>
+	        </div>
+	    </div>
+    </form>
+    <form id="register" style="display:none;" class="form-horizontal form-bordered form-row-stripped">
+	    <div class="modal-dialog" style="margin-top: 10%;">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h4 class="modal-title text-center" id="myModalLabel">注册</h4>
+	            </div>
+	            <div class="modal-body" id = "model-body">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-body">
+								<div class="form-group">
+									<label class="control-label col-md-3"> 昵称: </label>
+									<div class="col-md-6">
+										<input type="text" class="form-control" id="rnickName"
+											name="nickName" placeholder="昵称" autocomplete="off">
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="control-label col-md-3"> 邮箱: </label>
+									<div class="col-md-6">
+										<input type="text" class="form-control" id="remail"
+											name="email" placeholder="邮箱" autocomplete="off">
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="control-label col-md-3"> 密码: </label>
+									<div class="col-md-6">
+										<input type="password" class="form-control" id="rpassword"
+											name="password" placeholder="密码" autocomplete="off">
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="control-label col-md-3"> 确认密码: </label>
+									<div class="col-md-6">
+										<input type="password" class="form-control" id="rpassword2"
+											placeholder="密码" autocomplete="off">
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+	            <div class="modal-footer">
+	                 <button type="button" class="btn btn-info" onclick="showLogin()">返回</button>
+	                 <button type="button" class="btn btn-primary" onclick="register()">注册</button>
+	            </div>
+	        </div>
+	    </div>
+    </form>
+</body>
+</html>
+<!-- 通用js -->
+<div th:include="admin/common/html/js :: onload_js">
+</div>
+<script>
+function showRegister(){
+	$("#login").hide();
+	$("#register").show();
+}
+function showLogin(){
+	$("#register").hide();
+	$("#login").show();
+}
+function login(){
+	if(!$("#email").val()) {
+		alert("邮箱不能为空");
+		return;
+	}
+	if(!$("#password").val()) {
+		alert("密码不能为空");
+		return;
+	}
+	$.post('/login/check',
+		{
+			email: $("#email").val(),
+			password: $("#password").val()
+		},
+        function(data){
+            if(data.code == 200){
+            	window.location.href = "/";
+		    }else{
+		    	alert("异常："+data.msg);  
+		    }
+        }, 'json');
+}
+function register(){
+	if(!$("#remail").val()) {
+		alert("邮箱不能为空");
+		return;
+	}
+	if(!$("#rpassword").val()) {
+		alert("密码不能为空");
+		return;
+	}
+	if($("#rpassword").val() != $("#rpassword2").val()){
+		alert("两次密码不一致");
+		return;
+	}
+	$.post('/login/register',
+		$("#register").serialize(),
+        function(data){
+            if(data.code == 200){
+            	alert("注册成功，请登录");  
+            	showLogin();
+		    }else{
+		    	alert("异常："+data.msg);  
+		    }
+        }, 'json');
+}
+</script>

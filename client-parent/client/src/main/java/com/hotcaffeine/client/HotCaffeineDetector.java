@@ -18,6 +18,7 @@ import com.hotcaffeine.client.listener.UnsupportedMessageTypeListener;
 import com.hotcaffeine.client.listener.WorkerChangeListener;
 import com.hotcaffeine.client.netty.NettyClient;
 import com.hotcaffeine.client.push.HashGroupPusher;
+import com.hotcaffeine.client.worker.HealthDetector;
 import com.hotcaffeine.common.etcd.DefaultEtcdConfig;
 import com.hotcaffeine.common.etcd.IEtcdConfig;
 import com.hotcaffeine.common.model.KeyCount;
@@ -76,6 +77,9 @@ public class HotCaffeineDetector {
     // 本地热键检测缓存
     private Cache<String, AtomicInteger> hotDetectCache;
     
+    // worker健康探测
+    private HealthDetector workerHealthDetector;
+    
     /**
      * 一个app一个实例
      * 
@@ -86,6 +90,8 @@ public class HotCaffeineDetector {
             throw new IllegalArgumentException("Only one instance in jvm!");
         }
         this.appName = etcdConfig.getUser();
+        // worker健康探测
+        this.workerHealthDetector = new HealthDetector();
         // 创建netty客户端
         this.nettyClient = new NettyClient(appName);
         // 创建规则缓存器
@@ -114,7 +120,10 @@ public class HotCaffeineDetector {
             this.appEtcdClient.start();
             // initLocalDetectCache
             initLocalDetectCache();
-            ClientLogger.getLogger().info("appName:{} started", appName);
+            // workerHealthDetector
+            workerHealthDetector.setHotCaffeineDetector(this);
+            workerHealthDetector.start();
+            ClientLogger.getLogger().info("HotCaffeineDetector:{} started", appName);
         } catch (Throwable e) {
             ClientLogger.getLogger().error("appName:{} start error", appName, e);
         }
@@ -377,5 +386,9 @@ public class HotCaffeineDetector {
 
     public NettyClient getNettyClient() {
         return nettyClient;
+    }
+
+    public HealthDetector getWorkerHealthDetector() {
+        return workerHealthDetector;
     }
 }

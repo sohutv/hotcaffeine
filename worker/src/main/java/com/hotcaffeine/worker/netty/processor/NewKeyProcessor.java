@@ -50,6 +50,9 @@ public class NewKeyProcessor implements IRequestProcessor {
         MetricsUtil.incrReceiveKeys(models.size());
         for (KeyCount keyCount : models) {
             keyCount.setAppName(message.getAppName());
+            if (keyCount.isInner()) {
+                keyCount.setChannel(channel);
+            }
             if (!memoryMQGroup.offer(keyCount)) {
                 logger.warn("offer:{} failed, maybe full", keyCount);
             }

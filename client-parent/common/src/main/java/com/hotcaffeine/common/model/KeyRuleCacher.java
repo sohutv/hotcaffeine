@@ -328,6 +328,22 @@ public class KeyRuleCacher implements KeyRuleCacherMBean {
         return keyRuleList;
     }
     
+    /**
+     * 任意选择一个KeyRule
+     * 
+     * @return
+     */
+    public KeyRule selectKeyRule() {
+        for (KeyRule keyRule : keyRuleMap.values()) {
+            return keyRule;
+        }
+        List<KeyRule> keyRuleList = prefixKeyRuleList;
+        for (KeyRule keyRule : keyRuleList) {
+            return keyRule;
+        }
+        return null;
+    }
+    
     public static class CacheRuleChangeEvent {
         private List<CacheRule> cacheRuleList;
 

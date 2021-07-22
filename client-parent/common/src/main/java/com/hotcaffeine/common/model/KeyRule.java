@@ -24,11 +24,6 @@ public class KeyRule {
     // 开启本地检测
     private boolean enableLocalDetector;
     
-    /**
-     * 描述
-     */
-    private String desc;
-    
     // 目标qps
     private double destQps = Double.MAX_VALUE;
     
@@ -47,6 +42,9 @@ public class KeyRule {
     
     // 空值过期时间
     private int nullValueExpire;
+    
+    // 当做本地缓存用(不用检测)
+    private boolean useAsLocalCache;
 
     public boolean isPrefix() {
         return prefix;
@@ -68,20 +66,12 @@ public class KeyRule {
         return enableLocalDetector;
     }
 
-    public String getDesc() {
-        return desc;
-    }
-
     public int getInterval() {
         return interval;
     }
 
     public int getThreshold() {
         return threshold;
-    }
-
-    public void setDesc(String desc) {
-        this.desc = desc;
     }
 
     public void setInterval(int interval) {
@@ -189,6 +179,14 @@ public class KeyRule {
         this.nullValueExpire = nullValueExpire;
     }
 
+    public boolean isUseAsLocalCache() {
+        return useAsLocalCache;
+    }
+
+    public void setUseAsLocalCache(boolean useAsLocalCache) {
+        this.useAsLocalCache = useAsLocalCache;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -202,6 +200,7 @@ public class KeyRule {
         result = prime * result + (prefix ? 1231 : 1237);
         result = prime * result + threshold;
         result = prime * result + topkCount;
+        result = prime * result + (useAsLocalCache ? 1231 : 1237);
         result = prime * result + (useTopKAsHotKey ? 1231 : 1237);
         return result;
     }
@@ -239,6 +238,8 @@ public class KeyRule {
             return false;
         if (topkCount != other.topkCount)
             return false;
+        if (useAsLocalCache != other.useAsLocalCache)
+            return false;
         if (useTopKAsHotKey != other.useTopKAsHotKey)
             return false;
         return true;
@@ -247,8 +248,8 @@ public class KeyRule {
     @Override
     public String toString() {
         return "KeyRule [key=" + key + ", prefix=" + prefix + ", interval=" + interval + ", threshold=" + threshold
-                + ", enableLocalDetector=" + enableLocalDetector + ", desc=" + desc + ", destQps=" + destQps
-                + ", topkCount=" + topkCount + ", useTopKAsHotKey=" + useTopKAsHotKey + ", cacheName=" + cacheName
-                + ", disabled=" + disabled + ", nullValueExpire=" + nullValueExpire + "]";
+                + ", enableLocalDetector=" + enableLocalDetector + ", destQps=" + destQps + ", topkCount=" + topkCount
+                + ", useTopKAsHotKey=" + useTopKAsHotKey + ", cacheName=" + cacheName + ", disabled=" + disabled
+                + ", nullValueExpire=" + nullValueExpire + ", useAsLocalCache=" + useAsLocalCache + "]";
     }
 }

@@ -33,6 +33,13 @@ public class AppServerPusher implements IPusher {
      */
     @Override
     public void push(KeyCount keyCount) {
+        // 内部消息处理
+        if (keyCount.isInner()) {
+            keyCount.getChannel().writeAndFlush(
+                    NettyUtil.buildByteBuf(new Message(MessageType.RESPONSE_NEW_KEY, JsonUtil.toJSON(keyCount))));
+            return;
+        }
+        // 正常消息处理
         ChannelGroup channelGroup = clientChannelProcessor.getChannelGroup(keyCount.getAppName());
         if (channelGroup == null) {
             logger.error("app:{} no channel", keyCount.getAppName());

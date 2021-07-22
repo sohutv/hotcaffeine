@@ -152,8 +152,7 @@ public class DashboardEtcdClient implements Destroyable {
     }
 
     private String buildKey() {
-        String hostName = IpUtil.getHostName();
-        return etcdConfig.getDashboardPath() + hostName;
+        return etcdConfig.getDashboardPath() + IpUtil.INSTANCE_ID;
     }
 
     private String buildValue() {

@@ -13,9 +13,12 @@ import com.hotcaffeine.common.model.KeyRule;
 import com.hotcaffeine.common.model.ValueModel;
 import com.hotcaffeine.common.util.ClientLogger;
 import com.hotcaffeine.common.util.MetricsUtil;
+import com.hotcaffeine.common.util.NettyUtil;
+
 import io.etcd.jetcd.shaded.com.google.common.eventbus.AllowConcurrentEvents;
 import io.etcd.jetcd.shaded.com.google.common.eventbus.Subscribe;
 import io.etcd.jetcd.shaded.com.google.common.util.concurrent.ThreadFactoryBuilder;
+import io.netty.channel.Channel;
 
 /**
  * 客户端监听到有newKey事件
@@ -43,16 +46,11 @@ public class ReceiveNewKeyListener {
     @Subscribe
     @AllowConcurrentEvents
     public void newKeyComing(ReceiveNewKeyEvent event) {
+        long now = System.currentTimeMillis();
         KeyCount keyCount = event.getKeyCount();
         if (keyCount == null) {
             return;
         }
-        // 收到新key推送
-        newKey(keyCount);
-    }
-
-    public void newKey(KeyCount keyCount) {
-        long now = System.currentTimeMillis();
         String key = keyCount.getKey();
         if (key == null || key.length() == 0) {
             ClientLogger.getLogger().warn("the keyCount:{} key is blank", keyCount);
@@ -64,12 +62,18 @@ public class ReceiveNewKeyListener {
             ClientLogger.getLogger().warn("the key:{} time difference:{}, now:{} keyCreateAt:{}", key,
                     (now - keyCount.getCreateTime()), now, keyCount.getCreateTime());
         }
-        // 获取缓存
+        // 内部key
+        if (keyCount.isInner()) {
+            hotCaffeineDetector.getWorkerHealthDetector().receiveHotKey(NettyUtil.parseRemoteAddr(event.getChannel()), keyCount);
+            return;
+        }
+        // 获取规则
         KeyRule keyRule = hotCaffeineDetector.getKeyRuleCacher().findRule(key);
         if (keyRule == null) {
             ClientLogger.getLogger().warn("keyCount:{} keyRule is null", keyCount);
             return;
         }
+        // 获取缓存
         CacheRule cacheRule = hotCaffeineDetector.getKeyRuleCacher().getCacheRule(keyRule);
         if(cacheRule == null) {
             ClientLogger.getLogger().warn("keyCount:{} cacheRule is null", keyCount);
@@ -137,6 +141,7 @@ public class ReceiveNewKeyListener {
     
     public static class ReceiveNewKeyEvent {
         private KeyCount keyCount;
+        private Channel channel;
 
         public ReceiveNewKeyEvent(KeyCount keyCount) {
             this.keyCount = keyCount;
@@ -148,6 +153,14 @@ public class ReceiveNewKeyListener {
 
         public void setKeyCount(KeyCount keyCount) {
             this.keyCount = keyCount;
+        }
+
+        public Channel getChannel() {
+            return channel;
+        }
+
+        public void setChannel(Channel channel) {
+            this.channel = channel;
         }
     }
 }

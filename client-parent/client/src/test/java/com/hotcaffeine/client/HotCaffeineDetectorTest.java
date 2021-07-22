@@ -35,7 +35,7 @@ public class HotCaffeineDetectorTest {
         String key = "api:user:123";
         while(true) {
             hotSpotCache.getValue(key, k->"{\"id\":123, \"name\":\"hotcaffeine\", \"age\": 1}");
-            Thread.sleep(1);
+            Thread.sleep(100);
         }
     }
     

@@ -125,7 +125,7 @@ public class TopHotKeyTask implements Destroyable {
                 if (!keyRule.isUseTopKAsHotKey()) {
                     return;
                 }
-                push(appName, keyRule, topHotKey.getHotKeyList());
+                push(appName, topHotKey.getHotKeyList());
             } catch (Exception e) {
                 hotKeyLogger.error(e.getMessage(), e);
             }
@@ -140,7 +140,7 @@ public class TopHotKeyTask implements Destroyable {
      * @param k
      * @param v
      */
-    private void push(String appName, KeyRule keyRule, List<HotKey> hotKeyList) {
+    private void push(String appName, List<HotKey> hotKeyList) {
         KeyCount keyCount = new KeyCount();
         keyCount.setAppName(appName);
         for (HotKey hotKey : hotKeyList) {

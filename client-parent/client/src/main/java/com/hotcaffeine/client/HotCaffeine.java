@@ -121,8 +121,9 @@ public class HotCaffeine {
                 return null;
             }
             ValueModel value = localCache.get(key);
-            // worker不可达降级为caffeine
-            if (useAsCache && hotCaffeineDetector.getNettyClient().isWorkerUnreachable()) {
+            // 配置使用本地缓存或worker不健康降级为caffeine
+            if (useAsCache
+                    && (keyRule.isUseAsLocalCache() || !hotCaffeineDetector.getWorkerHealthDetector().isHealthy())) {
                 if (value == null) {
                     value = new ValueModel();
                     localCache.set(key, new ValueModel());

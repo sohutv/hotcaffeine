@@ -102,7 +102,7 @@ public class NewKeyConsumer implements MemoryMQConsumer<KeyCount> {
         caffeineCache.delete(key);
         // 开启推送
         keyCount.setCreateTime(System.currentTimeMillis());
-        logger.info("appName:{} key:{} hot:{} rule:{}", keyCount.getAppName(), key, count, keyRule.getKey());
+        logger.info("appName:{} key:{} inner:{} rule:{} hot:{}", keyCount.getAppName(), key, keyCount.isInner(), keyRule.getKey(), count);
         // 分别推送到各client和dashboard
         MetricsUtil.incrSendKeys();
         for (IPusher pusher : iPushers) {

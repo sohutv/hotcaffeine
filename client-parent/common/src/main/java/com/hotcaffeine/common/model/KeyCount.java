@@ -1,5 +1,9 @@
 package com.hotcaffeine.common.model;
 
+import com.hotcaffeine.common.util.IpUtil;
+
+import io.netty.channel.Channel;
+
 /**
  * 热key的定义
  * 
@@ -7,6 +11,9 @@ package com.hotcaffeine.common.model;
  * @version 1.0
  */
 public class KeyCount {
+    // 内部key计数器
+    public static long innerKeyCounter;
+    
     /**
      * 创建的时间
      */
@@ -28,17 +35,11 @@ public class KeyCount {
      * 是否是删除事件
      */
     private boolean remove;
-
-    @Override
-    public String toString() {
-        return "keyCount{" +
-                "createTime=" + createTime +
-                ", key='" + key + '\'' +
-                ", count=" + count +
-                ", appName='" + appName + '\'' +
-                ", remove=" + remove +
-                '}';
-    }
+    
+    // 是否是内部key
+    private boolean isInner;
+    
+    private transient Channel channel;
 
     public boolean isRemove() {
         return remove;
@@ -82,5 +83,46 @@ public class KeyCount {
     
     public String uniqueKey() {
         return appName + key;
+    }
+    
+    public static KeyCount buildInnerKeyCount(String appName, KeyRule keyRule) {
+        KeyCount keyCount = new KeyCount();
+        keyCount.setAppName(appName);
+        keyCount.setCount(keyRule.getThreshold());
+        keyCount.setInner(true);
+        String key = IpUtil.INSTANCE_ID + ":" + (innerKeyCounter++);
+        if (keyRule.isPrefix()) {
+            keyCount.setKey(keyRule.getKey() + ":" + key);
+        } else {
+            keyCount.setKey(KeyRule.buildFullKey(keyRule.getKey(), key));
+        }
+        return keyCount;
+    }
+
+    public boolean isInner() {
+        return isInner;
+    }
+
+    public void setInner(boolean isInner) {
+        this.isInner = isInner;
+    }
+    
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
+
+    @Override
+    public String toString() {
+        return "keyCount{" +
+                "createTime=" + createTime +
+                ", key='" + key + '\'' +
+                ", count=" + count +
+                ", appName='" + appName + '\'' +
+                ", remove=" + remove +
+                '}';
     }
 }

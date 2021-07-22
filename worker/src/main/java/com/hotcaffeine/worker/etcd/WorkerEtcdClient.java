@@ -202,7 +202,7 @@ public class WorkerEtcdClient implements Destroyable {
         if (!etcdConfig.isDefaultWorker()) {
             workerPath = etcdConfig.getWorkerForAppPath();
         }
-        return workerPath + "/" + IpUtil.getHostName();
+        return workerPath + "/" + IpUtil.INSTANCE_ID;
     }
     
     private String getIp() {

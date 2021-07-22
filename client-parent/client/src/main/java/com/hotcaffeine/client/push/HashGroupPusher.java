@@ -70,12 +70,6 @@ public class HashGroupPusher {
         if (list.size() == 0) {
             return;
         }
-        // worker不可达不再推送
-        if (nettyClient.isWorkerUnreachable()) {
-            ClientLogger.getLogger().warn("worker is unreachable, cannot push:{}", list.size());
-            return;
-        }
-        MetricsUtil.incrSendKeys(list.size());
         Map<String, List<KeyCount>> map = new HashMap<>();
         for (KeyCount keyCount : list) {
             String server = nettyClient.choose(keyCount.getKey());
@@ -96,6 +90,9 @@ public class HashGroupPusher {
             } catch (Exception e) {
                 ClientLogger.getLogger().error("{} flush error", server, e);
             }
+        }
+        if (map.size() > 0) {
+            MetricsUtil.incrSendKeys(list.size());
         }
     }
 

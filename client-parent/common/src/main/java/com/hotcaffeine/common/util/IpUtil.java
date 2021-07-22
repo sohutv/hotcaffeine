@@ -18,10 +18,11 @@
 package com.hotcaffeine.common.util;
 
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.Enumeration;
 
 /**
@@ -31,12 +32,9 @@ import java.util.Enumeration;
  */
 public final class IpUtil {
     
-    /**
-     * IP地址的正则表达式.
-     */
-    public static final String IP_REGEX = "((\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])(\\.(\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){3})";
-    
     private static volatile String cachedIpAddress;
+    
+    public static String INSTANCE_ID = getIp() + ":" + getPid();
 
     /**
      * 获取本机IP地址.
@@ -90,17 +88,13 @@ public final class IpUtil {
         return ipAddress.getHostAddress().contains(":");
     }
     
-    /**
-     * 获取本机Host名称.
-     * 
-     * @return 本机Host名称
-     */
-    public static String getHostName() {
+    public static int getPid() {
+        RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+        String name = runtime.getName(); // format: "pid@hostname"
         try {
-            return InetAddress.getLocalHost().getHostName();
-        } catch (final UnknownHostException ex) {
-            return null;
+            return Integer.parseInt(name.substring(0, name.indexOf('@')));
+        } catch (Exception e) {
+            return -1;
         }
     }
-
 }

@@ -54,9 +54,6 @@ public class NettyClient {
     
     private NettyTrafficMetrics nettyTrafficMetrics;
     
-    // worker不可达
-    private volatile boolean workerUnreachable;
-
     public NettyClient(String appName) {
         this.appName = appName;
         nettyTrafficMetrics = new NettyTrafficMetrics();
@@ -101,7 +98,6 @@ public class NettyClient {
     public synchronized void connect(Set<String> addresses) {
         // 1.无变更直接返回
         if (!changed(addresses)) {
-            setWorkerUnreachable();
             return;
         }
         ClientLogger.getLogger().info("worker changed! old:{}, new:{}", channelTables.keySet(), addresses);
@@ -127,11 +123,6 @@ public class NettyClient {
                 removeAddress(address, "etcd");
             }
         }
-        setWorkerUnreachable();
-    }
-    
-    private void setWorkerUnreachable() {
-        workerUnreachable = channelTables.size() <= 0;
     }
 
     /**
@@ -216,10 +207,6 @@ public class NettyClient {
         return channelTables.keySet();
     }
 
-    public boolean isWorkerUnreachable() {
-        return workerUnreachable;
-    }
-
     /**
      * 获取hash地址
      * 
@@ -263,23 +250,25 @@ public class NettyClient {
         }
 
         @Override
-        protected void channelRead0(ChannelHandlerContext channelHandlerContext, String message) {
+        protected void channelRead0(ChannelHandlerContext context, String message) {
             Message msg = JsonUtil.toBean(message, Message.class);
             if (MessageType.PONG == msg.getMessageType()) {
                 return;
             }
             if (MessageType.RESPONSE_NEW_KEY == msg.getMessageType()) {
                 KeyCount keyCount = JsonUtil.toBean(msg.getBody(), KeyCount.class);
-                ClientLogger.getLogger().info("receive new key:{}", msg);
-                EventBusUtil.post(new ReceiveNewKeyEvent(keyCount));
+                ClientLogger.getLogger().info("receive {} new key:{}", NettyUtil.parseRemoteAddr(context.channel()), msg);
+                ReceiveNewKeyEvent event = new ReceiveNewKeyEvent(keyCount);
+                event.setChannel(context.channel());
+                EventBusUtil.post(event);
             } else if (MessageType.REQUEST_HOTKEY_VALUE == msg.getMessageType()) {
                 String key = msg.getBody();
                 ClientLogger.getLogger().info("receive requestHotValue key:{}", key);
-                EventBusUtil.post(new RequestHotValueEvent(channelHandlerContext.channel(), key, 
+                EventBusUtil.post(new RequestHotValueEvent(context.channel(), key, 
                         msg.getRequestId()));
             } else {
                 ClientLogger.getLogger().info("unsupported msg type:{}", msg);
-                EventBusUtil.post(new UnsupportedMessageTypeEvent(channelHandlerContext.channel(), msg));
+                EventBusUtil.post(new UnsupportedMessageTypeEvent(context.channel(), msg));
             }
         }
     }

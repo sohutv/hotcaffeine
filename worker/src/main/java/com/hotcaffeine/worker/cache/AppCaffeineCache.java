@@ -21,9 +21,9 @@ import com.hotcaffeine.worker.metric.BucketLeapArray;
 public class AppCaffeineCache {
     public static final long MAXIMUM_SIZE = 5000000;
     
-    // 缓存过期时间，单位分钟
-    @Value("${caffeine.minutes}")
-    private int caffeineMinutes;
+    // 缓存过期时间
+    @Value("${caffeine.expireInSeconds}")
+    private int expireInSeconds;
 
     /**
      * key是appName，value是caffeine
@@ -41,13 +41,13 @@ public class AppCaffeineCache {
             Caffeine<Object, Object> caffeine = Caffeine.newBuilder()
                     .initialCapacity(8192)
                     .maximumSize(MAXIMUM_SIZE)
-                    .expireAfterWrite(caffeineMinutes, TimeUnit.MINUTES)// 过期时间，默认1分钟
+                    .expireAfterAccess(expireInSeconds, TimeUnit.SECONDS)
                     .softValues()
                     .recordStats();
-            return new CaffeineCache<>(appName, caffeine, TimeUnit.MINUTES.toMillis(caffeineMinutes), MAXIMUM_SIZE);
+            return new CaffeineCache<>(appName, caffeine, TimeUnit.SECONDS.toMillis(expireInSeconds), MAXIMUM_SIZE);
         });
     }
-
+    
     /**
      * 获取cache，并发安全
      * 

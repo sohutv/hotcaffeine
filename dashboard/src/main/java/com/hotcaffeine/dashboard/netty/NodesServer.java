@@ -116,7 +116,7 @@ public class NodesServer implements Destroyable {
                 } else if (MessageType.REQUEST_HOT_KEY == msg.getMessageType()) {
                     List<KeyCount> list = JsonUtil.toList(msg.getBody(), KeyCount.class);
                     for (KeyCount keyCount : list) {
-                        hotKeyMemoryMQ.produce(keyCount);
+                        hotKeyMemoryMQ.offer(keyCount);
                     }
                 }
             } catch (Exception e) {

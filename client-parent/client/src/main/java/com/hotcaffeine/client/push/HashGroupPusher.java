@@ -67,6 +67,14 @@ public class HashGroupPusher {
      * @param list
      */
     public void push(Collection<KeyCount> list) {
+        if (list.size() == 0) {
+            return;
+        }
+        // worker不可达不再推送
+        if (nettyClient.isWorkerUnreachable()) {
+            ClientLogger.getLogger().warn("worker is unreachable, cannot push:{}", list.size());
+            return;
+        }
         MetricsUtil.incrSendKeys(list.size());
         Map<String, List<KeyCount>> map = new HashMap<>();
         for (KeyCount keyCount : list) {

@@ -17,9 +17,8 @@ import com.hotcaffeine.common.cache.CaffeineCache;
 import com.hotcaffeine.common.model.KeyCount;
 import com.hotcaffeine.common.model.KeyRule;
 import com.hotcaffeine.common.model.KeyRuleCacher;
-import com.hotcaffeine.common.util.Constant;
-import com.hotcaffeine.common.util.MetricsUtil;
 import com.hotcaffeine.common.util.MemoryMQ.MemoryMQConsumer;
+import com.hotcaffeine.common.util.MetricsUtil;
 import com.hotcaffeine.worker.cache.AppCaffeineCache;
 import com.hotcaffeine.worker.cache.AppKeyRuleCacher;
 import com.hotcaffeine.worker.metric.BucketLeapArray;
@@ -84,16 +83,13 @@ public class NewKeyConsumer implements MemoryMQConsumer<KeyCount> {
             return;
         }
         // 获取缓存
-        CaffeineCache<BucketLeapArray> caffeineCache = appCaffeineCache
-                .getCacheOrBuildIfAbsent(keyCount.getAppName());
+        CaffeineCache<BucketLeapArray> caffeineCache = appCaffeineCache.getCacheOrBuildIfAbsent(keyCount.getAppName());
         caffeineCache.setActiveTime(System.currentTimeMillis());
         // 获取滑动窗口
         BucketLeapArray leapArray = getBucketLeapArray(caffeineCache, key, keyRule);
         long count = leapArray.count(keyCount.getCount());
         // 没hot
         if (count < keyRule.getThreshold()) {
-            // 如果没hot，重新put，cache会自动刷新过期时间
-            caffeineCache.set(key, leapArray);
             return;
         }
         // 并发安全，保障hotCounter只有一个
@@ -124,14 +120,12 @@ public class NewKeyConsumer implements MemoryMQConsumer<KeyCount> {
      */
     private BucketLeapArray getBucketLeapArray(CaffeineCache<BucketLeapArray> caffeineCache, String key,
             KeyRule keyRule) {
-        return caffeineCache.getCache().get(key, s -> {
-            int interval = keyRule.getInterval();
-            // 最大10秒
-            if (interval > Constant.MAX_INTERVAL) {
-                interval = Constant.MAX_INTERVAL;
-            }
-            return new BucketLeapArray(getSampleCount(interval), interval * 1000);
-        });
+        BucketLeapArray bucketLeapArray = caffeineCache.getCache().getIfPresent(key);
+        if(bucketLeapArray == null) {
+            bucketLeapArray = new BucketLeapArray(getSampleCount(keyRule.getInterval()), keyRule.getInterval() * 1000);
+            caffeineCache.getCache().put(key, bucketLeapArray);
+        }
+        return bucketLeapArray;
     }
 
     private int getSampleCount(int interval) {

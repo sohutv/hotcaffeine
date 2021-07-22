@@ -53,6 +53,9 @@ public class NettyClient {
     private String appName;
     
     private NettyTrafficMetrics nettyTrafficMetrics;
+    
+    // worker不可达
+    private volatile boolean workerUnreachable;
 
     public NettyClient(String appName) {
         this.appName = appName;
@@ -98,6 +101,7 @@ public class NettyClient {
     public synchronized void connect(Set<String> addresses) {
         // 1.无变更直接返回
         if (!changed(addresses)) {
+            setWorkerUnreachable();
             return;
         }
         ClientLogger.getLogger().info("worker changed! old:{}, new:{}", channelTables.keySet(), addresses);
@@ -123,6 +127,11 @@ public class NettyClient {
                 removeAddress(address, "etcd");
             }
         }
+        setWorkerUnreachable();
+    }
+    
+    private void setWorkerUnreachable() {
+        workerUnreachable = channelTables.size() <= 0;
     }
 
     /**
@@ -205,6 +214,10 @@ public class NettyClient {
      */
     public Set<String> getAddresses() {
         return channelTables.keySet();
+    }
+
+    public boolean isWorkerUnreachable() {
+        return workerUnreachable;
     }
 
     /**

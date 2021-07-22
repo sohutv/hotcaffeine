@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component;
 import com.hotcaffeine.common.model.KeyCount;
 import com.hotcaffeine.common.model.Message;
 import com.hotcaffeine.common.model.MessageType;
-import com.hotcaffeine.common.util.MetricsUtil;
 import com.hotcaffeine.common.util.JsonUtil;
-import com.hotcaffeine.common.util.MemoryMQ;
+import com.hotcaffeine.common.util.MemoryMQGroup;
+import com.hotcaffeine.common.util.MetricsUtil;
 import com.hotcaffeine.common.util.NettyUtil;
 
 import io.netty.channel.Channel;
@@ -33,8 +33,9 @@ public class NewKeyProcessor implements IRequestProcessor {
     @Value("${netty.timeOut}")
     private int nettyTimeOut;
 
+    // 内存mq
     @Resource
-    private MemoryMQ<KeyCount> newKeyMemoryMQ;
+    private MemoryMQGroup<KeyCount> memoryMQGroup;
 
     @Override
     public void process(Message message, Channel channel) {
@@ -49,7 +50,9 @@ public class NewKeyProcessor implements IRequestProcessor {
         MetricsUtil.incrReceiveKeys(models.size());
         for (KeyCount keyCount : models) {
             keyCount.setAppName(message.getAppName());
-            newKeyMemoryMQ.produce(keyCount);
+            if (!memoryMQGroup.offer(keyCount)) {
+                logger.warn("offer:{} failed, maybe full", keyCount);
+            }
         }
     }
 

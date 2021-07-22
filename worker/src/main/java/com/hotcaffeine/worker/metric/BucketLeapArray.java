@@ -15,8 +15,6 @@
  */
 package com.hotcaffeine.worker.metric;
 
-import java.util.concurrent.atomic.LongAdder;
-
 /**
  * The fundamental data structure for metric statistics in a time span.
  *
@@ -24,26 +22,25 @@ import java.util.concurrent.atomic.LongAdder;
  * @author Eric Zhao
  * @see LeapArray
  */
-public class BucketLeapArray extends LeapArray<LongAdder> {
+public class BucketLeapArray extends LeapArray<Long> {
     
     // 总量
-    private LongAdder totalCount;
+    private long totalCount;
 
     public BucketLeapArray(int sampleCount, int intervalInMs) {
         super(sampleCount, intervalInMs);
-        totalCount = new LongAdder();
     }
 
     @Override
-    public LongAdder newEmptyBucket(long time) {
-        return new LongAdder();
+    public Long newEmptyBucket(long time) {
+        return 0L;
     }
 
     @Override
-    protected WindowWrap<LongAdder> resetWindowTo(WindowWrap<LongAdder> w, long startTime) {
+    protected WindowWrap<Long> resetWindowTo(WindowWrap<Long> w, long startTime) {
         // Update the start time and reset value.
         w.resetTo(startTime);
-        w.value().reset();
+        w.setValue(0L);
         return w;
     }
 
@@ -56,9 +53,10 @@ public class BucketLeapArray extends LeapArray<LongAdder> {
     public long count(long count) {
         long timeMillis = System.currentTimeMillis();
         // 计数
-        currentWindow(timeMillis).value().add(count);
+        WindowWrap<Long> window = currentWindow(timeMillis);
+        window.setValue(window.value() + count);
         // 总量计数
-        totalCount.add(count);
+        totalCount += count;
         // 统计总量
         return leapArrayCount(timeMillis);
     }
@@ -83,7 +81,7 @@ public class BucketLeapArray extends LeapArray<LongAdder> {
         int size = array.length();
         long total = 0;
         for (int i = 0; i < size; i++) {
-            WindowWrap<LongAdder> windowWrap = array.get(i);
+            WindowWrap<Long> windowWrap = array.get(i);
             if (windowWrap == null || isWindowDeprecated(timeMillis, windowWrap)) {
                 continue;
             }
@@ -106,6 +104,6 @@ public class BucketLeapArray extends LeapArray<LongAdder> {
      * @return
      */
     public long getTotalCount() {
-        return totalCount.longValue();
+        return totalCount;
     }
 }

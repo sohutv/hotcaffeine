@@ -28,7 +28,7 @@ local:
 thread:
   count: ${threadCount:0}
 caffeine:
-  minutes: ${caffeineMinutes:1}
+  expireInSeconds: ${expireInSeconds:11}
 #etcd的地址，如有多个用逗号分隔
 etcd:
   endpoints: ${etcdServer:http://127.0.0.1:2379} #etcd的地址，重要！！！

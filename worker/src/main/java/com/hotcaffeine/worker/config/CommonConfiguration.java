@@ -7,8 +7,12 @@ import org.springframework.context.annotation.Configuration;
 
 import com.hotcaffeine.common.etcd.DefaultEtcdConfig;
 import com.hotcaffeine.common.etcd.IEtcdConfig;
+import com.hotcaffeine.common.model.ConsistentHashServer.HashFunction;
+import com.hotcaffeine.common.model.ConsistentHashServer.Murmur3HashFunction;
 import com.hotcaffeine.common.model.KeyCount;
 import com.hotcaffeine.common.util.MemoryMQ;
+import com.hotcaffeine.common.util.MemoryMQGroup;
+import com.hotcaffeine.common.util.MemoryMQGroup.IGroupBy;
 import com.hotcaffeine.common.util.ServiceLoaderUtil;
 import com.hotcaffeine.worker.consumer.DashboardConsumer;
 import com.hotcaffeine.worker.consumer.NewKeyConsumer;
@@ -25,7 +29,7 @@ public class CommonConfiguration {
 
     @Value("${thread.count}")
     private int threadCount;
-    
+
     @Bean
     @ConfigurationProperties(prefix = "etcd")
     public IEtcdConfig etcdConfig() {
@@ -41,19 +45,20 @@ public class CommonConfiguration {
      * @return
      */
     @Bean
-    public MemoryMQ<KeyCount> newKeyMemoryMQ(NewKeyConsumer newKeyConsumer) {
-        MemoryMQ<KeyCount> memoryMQ = new MemoryMQ<>();
-        memoryMQ.setConsumerName("newKeyMQ");
-        // 最大缓存量
-        memoryMQ.setBufferSize(1000000);
-        // 消费线程数
-        memoryMQ.setConsumerThreadNum(threadCount);
-        // 最小批量处理数量
-        memoryMQ.setMinBatchDealSize(1);
-        memoryMQ.setMemoryMQConsumer(newKeyConsumer);
-        memoryMQ.setDestroyOrder(30);
-        memoryMQ.init();
-        return memoryMQ;
+    public MemoryMQGroup<KeyCount> newKeyMemoryMQ(NewKeyConsumer newKeyConsumer) {
+        HashFunction hashFunction = new Murmur3HashFunction();
+        // 构建分组依据
+        IGroupBy<KeyCount> groupBy = new IGroupBy<KeyCount>() {
+            public long groupValue(KeyCount keyCount) {
+                return hashFunction.hash(keyCount.getKey()) & Long.MAX_VALUE;
+            }
+        };
+        if (threadCount == 0) {
+            threadCount = Runtime.getRuntime().availableProcessors();
+        }
+        // 构建内存mq分组
+        return new MemoryMQGroup<KeyCount>(groupBy, threadCount, 100000, "newKeyMQ",
+                newKeyConsumer);
     }
 
     /**

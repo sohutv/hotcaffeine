@@ -20,6 +20,6 @@ public class DashboardPusher implements IPusher {
     
     @Override
     public void push(KeyCount keyCount) {
-        dashboardMemoryMQ.produce(keyCount);
+        dashboardMemoryMQ.offer(keyCount);
     }
 }

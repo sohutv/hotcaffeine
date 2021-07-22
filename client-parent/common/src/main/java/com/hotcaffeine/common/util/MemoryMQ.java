@@ -12,8 +12,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hotcaffeine.common.model.Destroyable;
-
 import io.etcd.jetcd.shaded.com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
@@ -23,7 +21,7 @@ import io.etcd.jetcd.shaded.com.google.common.util.concurrent.ThreadFactoryBuild
  * @date 2021年5月12日
  * @param <T> 存储类型
  */
-public class MemoryMQ<T> implements Destroyable {
+public class MemoryMQ<T> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     // 缓冲队列
     private BlockingQueue<T> bufferQueue;
@@ -82,16 +80,30 @@ public class MemoryMQ<T> implements Destroyable {
      * 
      * @param t
      */
-    public boolean produce(T t) {
+    public boolean offer(T t) {
         if (shutdown) {
             return false;
         }
         try {
             return bufferQueue.offer(t);
         } catch (Exception e) {
-            logger.error("{} put err:{}", consumerName, t, e);
+            logger.error("{} offer err:{}", consumerName, t, e);
         }
         return false;
+    }
+    
+    /**
+     * 生产对象，无可用空间会一直等待
+     * @param t
+     * @throws InterruptedException
+     */
+    public void put(T t) throws Exception {
+        try {
+            bufferQueue.put(t);
+        } catch (Exception e) {
+            logger.error("{} put err:{}", consumerName, t, e);
+            throw e;
+        }
     }
 
     /**
@@ -146,7 +158,7 @@ public class MemoryMQ<T> implements Destroyable {
                 } catch (Exception e) {
                     logger.error("consume {} err, reconsume:{}", t, reconsume, e);
                     if (reconsume) {
-                        boolean rst = produce(t);
+                        boolean rst = offer(t);
                         if (!rst) {
                             logger.warn("reproduce {} err!", t);
                         }
@@ -194,6 +206,10 @@ public class MemoryMQ<T> implements Destroyable {
 
     public void setBufferQueue(BlockingQueue<T> bufferQueue) {
         this.bufferQueue = bufferQueue;
+    }
+
+    public BlockingQueue<T> getBufferQueue() {
+        return bufferQueue;
     }
 
     public int getBufferSize() {
@@ -284,26 +300,12 @@ public class MemoryMQ<T> implements Destroyable {
     }
 
     @Override
-    public int compareTo(Destroyable o) {
-        return order() - o.order();
-    }
-
-    @Override
-    public void destroy() throws Exception {
-        shutdown();
-    }
-
-    @Override
-    public int order() {
-        return destroyOrder;
-    }
-
-    @Override
     public String toString() {
-        return "MemoryMQ [bufferQueue=" + bufferQueue + ", bufferSize=" + bufferSize + ", maxWaitWhenNoNewDataInMillis="
+        return "MemoryMQ [consumerName=" + consumerName + ", bufferQueue=" + bufferQueue + ", bufferSize=" + bufferSize
+                + ", maxWaitWhenNoNewDataInMillis="
                 + maxWaitWhenNoNewDataInMillis + ", minBatchDealSize=" + minBatchDealSize + ", minDealIntervalMillis="
-                + minDealIntervalMillis + ", minDealIntervalBufferSize=" + minDealIntervalBufferSize + ", consumerName="
-                + consumerName + ", consumerThreadNum=" + consumerThreadNum + ", consumerPool=" + consumerPool
+                + minDealIntervalMillis + ", minDealIntervalBufferSize=" + minDealIntervalBufferSize
+                + ", consumerThreadNum=" + consumerThreadNum + ", consumerPool=" + consumerPool
                 + ", shutdown=" + shutdown + ", checkIntervaMillisWhenShutdownInvoked="
                 + checkIntervaMillisWhenShutdownInvoked + ", maxCheckIntervaWhenShutdownInvoked="
                 + maxCheckIntervaWhenShutdownInvoked + ", memoryMQConsumer=" + memoryMQConsumer + ", reconsume="

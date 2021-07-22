@@ -83,7 +83,7 @@ public class HotCaffeine {
      * @return 空key返回false
      */
     public boolean isHot(String key) {
-        return getValueModel(key) != null;
+        return getValueModel(key, false) != null;
     }
 
     /**
@@ -93,6 +93,16 @@ public class HotCaffeine {
      * @return 空key返回null
      */
     public ValueModel getValueModel(String key) {
+        return getValueModel(key, true);
+    }
+
+    /**
+     * 获取ValueModel，自动检测是否为热点。
+     * 
+     * @param key
+     * @return 空key返回null
+     */
+    public ValueModel getValueModel(String key, boolean useAsCache) {
         if (key == null || key.length() == 0) {
             return null;
         }
@@ -111,6 +121,14 @@ public class HotCaffeine {
                 return null;
             }
             ValueModel value = localCache.get(key);
+            // worker不可达降级为caffeine
+            if (useAsCache && hotCaffeineDetector.getNettyClient().isWorkerUnreachable()) {
+                if (value == null) {
+                    value = new ValueModel();
+                    localCache.set(key, new ValueModel());
+                }
+                return value;
+            }
             // 非热点
             if (value == null) {
                 count(keyRule, key);

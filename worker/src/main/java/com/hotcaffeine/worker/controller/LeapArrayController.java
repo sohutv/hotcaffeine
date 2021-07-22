@@ -3,7 +3,6 @@ package com.hotcaffeine.worker.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReferenceArray;
-import java.util.concurrent.atomic.LongAdder;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
@@ -70,13 +69,13 @@ public class LeapArrayController {
         leapArrayModel.setTotalCount(bucketLeapArray.getTotalCount());
 
         // 获取窗口
-        AtomicReferenceArray<WindowWrap<LongAdder>> windowArray = bucketLeapArray.getArray();
+        AtomicReferenceArray<WindowWrap<Long>> windowArray = bucketLeapArray.getArray();
         int size = windowArray.length();
         List<WindowWrapModel> windowWrapModelList = new ArrayList<>(size);
 
         long curTime = System.currentTimeMillis();
         for (int i = 0; i < size; i++) {
-            WindowWrap<LongAdder> windowWrap = windowArray.get(i);
+            WindowWrap<Long> windowWrap = windowArray.get(i);
             if (windowWrap == null) {
                 continue;
             }

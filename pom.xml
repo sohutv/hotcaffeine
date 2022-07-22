@@ -25,7 +25,7 @@
 		<spring-cloud.version>Hoxton.SR6</spring-cloud.version>
 		<netty4.version>4.1.42.Final</netty4.version>
 		<caffeine.version>2.8.0</caffeine.version>
-		<fastjson.version>1.2.70</fastjson.version>
+		<fastjson.version>1.2.83</fastjson.version>
 		<jetcd-version>0.5.4</jetcd-version>
 		<jedis.version>3.1.0</jedis.version>
 		<logstash-logback-encoder.version>5.3</logstash-logback-encoder.version>

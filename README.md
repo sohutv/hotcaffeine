@@ -1,6 +1,6 @@
 ## HotCaffeine：热咖啡
 
-高性能，高可靠的热点数据探测系统 - 基于京东的hotkey项目优化而来。热乎的分享文章参考：[Caffeine如何变热？](https://mp.weixin.qq.com/s/Swd6qiF0VnpJ2BK3Kq4ZgA)
+高性能，高可靠的热点数据探测系统。热乎的分享文章参考：[Caffeine如何变热？](https://mp.weixin.qq.com/s/Swd6qiF0VnpJ2BK3Kq4ZgA)
 
 **架构如下**：
 
